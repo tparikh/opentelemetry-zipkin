@@ -1,0 +1,51 @@
+version: '3'
+services:
+  # app:
+  #   user: "1000"
+  #   build: .
+  #   ports:
+  #   - "8080:8080"
+  #   environment:
+  #     JAVA_TOOL_OPTIONS: >-
+  #       -javaagent:/opentelemetry-javaagent-all.jar
+  #       -Djava.security.egd=file:/dev/./urandom
+  #       -Dotel.instrumentation.spring-web.enabled=true
+  #       -Dotel.instrumentation.jdbc.enabled=true
+  #       -Dio.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel=info
+  #       -Djson.logging.level=INFO
+  #       -Dotel.resource.attributes=service.name=test
+  #     OTEL_METRICS_EXPORTER: none
+  #     OTEL_TRACES_EXPORTER: zipkin
+  #     OTEL_EXPORTER_ZIPKIN_SERVICE_NAME: otelapp-07-27
+  #     OTEL_EXPORTER_ZIPKIN_ENDPOINT: http://otel-collector:9411/api/v2/spans
+  #   depends_on:
+  #     - zipkin-all-in-one
+  #     - otel-collector
+
+  # Zipkin
+  zipkin-all-in-one:
+    image: openzipkin/zipkin:latest
+    ports:
+    - "9411:9411"
+
+  # Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.12.0
+    command:
+    - /otelcontribcol
+    - '--config=/opentelemetry-collector-config.yaml'
+    - '--mem-ballast-size-mib=683'
+    volumes:
+      - ./opentelemetry-collector-config.yaml:/opentelemetry-collector-config.yaml
+    ports:
+    - "7276"
+    - "9943"
+    - "55680"
+    - "55681"
+    - "14250"
+    - "14268"
+    - "9411"
+    - "8888"
+    - "13133"
+    depends_on:
+      - zipkin-all-in-one
